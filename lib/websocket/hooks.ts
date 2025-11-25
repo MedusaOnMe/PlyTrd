@@ -62,6 +62,11 @@ export function useOrderBookWebSocket(assetId: string | null) {
   const [isConnected, setIsConnected] = useState(false);
   const wsClient = useRef(getWebSocketClient());
 
+  // Reset orderBook when assetId changes
+  useEffect(() => {
+    setOrderBook(null);
+  }, [assetId]);
+
   useEffect(() => {
     if (!assetId) return;
 
