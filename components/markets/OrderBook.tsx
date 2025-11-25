@@ -11,6 +11,7 @@ interface OrderBookProps {
   maxLevels?: number;
   onSelectPrice?: (price: string, side: 'BUY' | 'SELL') => void;
   enableRealtime?: boolean;
+  className?: string;
 }
 
 export function OrderBook({
@@ -19,6 +20,7 @@ export function OrderBook({
   maxLevels = 10,
   onSelectPrice,
   enableRealtime = true,
+  className,
 }: OrderBookProps) {
   const { orderBook: wsOrderBook, isConnected } = useOrderBookWebSocket(
     enableRealtime ? assetId || null : null
@@ -36,25 +38,33 @@ export function OrderBook({
       return { bids: [], asks: [], maxSize: 0, spread: null };
     }
 
-    const bids = orderBook.bids.slice(0, maxLevels);
-    const asks = orderBook.asks.slice(0, maxLevels).reverse();
+    // Sort bids by price descending (best/highest bids first)
+    const sortedBids = [...orderBook.bids]
+      .sort((a, b) => parseFloat(b.price) - parseFloat(a.price))
+      .slice(0, maxLevels);
 
-    const allSizes = [...bids, ...asks].map((l) => parseFloat(l.size));
+    // Sort asks by price ascending (best/lowest asks first)
+    const sortedAsks = [...orderBook.asks]
+      .sort((a, b) => parseFloat(a.price) - parseFloat(b.price))
+      .slice(0, maxLevels);
+
+    const allSizes = [...sortedBids, ...sortedAsks].map((l) => parseFloat(l.size));
     const maxSize = Math.max(...allSizes, 1);
 
+    // Spread = best ask - best bid
     const spread =
-      bids.length > 0 && asks.length > 0
-        ? (parseFloat(asks[asks.length - 1]?.price || '0') -
-            parseFloat(bids[0]?.price || '0')) *
+      sortedBids.length > 0 && sortedAsks.length > 0
+        ? (parseFloat(sortedAsks[0]?.price || '0') -
+            parseFloat(sortedBids[0]?.price || '0')) *
           100
         : null;
 
-    return { bids, asks, maxSize, spread };
+    return { bids: sortedBids, asks: sortedAsks, maxSize, spread };
   }, [orderBook, maxLevels]);
 
   if (!orderBook || (orderBook.bids.length === 0 && orderBook.asks.length === 0)) {
     return (
-      <div className="glass rounded-xl overflow-hidden">
+      <div className={`glass rounded-xl overflow-hidden ${className || ''}`}>
         <div className="flex items-center gap-3 p-4 border-b border-white/5">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/30 to-transparent flex items-center justify-center">
             <BookOpen className="w-5 h-5 text-primary" />
@@ -78,9 +88,9 @@ export function OrderBook({
   }
 
   return (
-    <div className="glass rounded-xl overflow-hidden">
+    <div className={`glass rounded-xl overflow-hidden flex flex-col ${className || ''}`}>
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-white/5">
+      <div className="flex items-center justify-between p-4 border-b border-white/5 flex-shrink-0">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/30 to-transparent flex items-center justify-center">
             <BookOpen className="w-5 h-5 text-primary" />
@@ -117,7 +127,7 @@ export function OrderBook({
       </div>
 
       {/* Column Headers */}
-      <div className="grid grid-cols-2 gap-4 px-4 py-2 bg-white/[0.02] text-xs text-muted-foreground uppercase tracking-wider">
+      <div className="grid grid-cols-2 gap-4 px-4 py-2 bg-white/[0.02] text-xs text-muted-foreground uppercase tracking-wider flex-shrink-0">
         <div className="grid grid-cols-2 gap-2">
           <span>Bid</span>
           <span className="text-right">Size</span>
@@ -129,7 +139,7 @@ export function OrderBook({
       </div>
 
       {/* Order Book Content */}
-      <div className="grid grid-cols-2 gap-4 p-4">
+      <div className="grid grid-cols-2 gap-4 p-4 flex-1 min-h-0 overflow-y-auto">
         {/* Bids (Buy orders) */}
         <div className="space-y-1">
           {bids.map((bid, i) => (
@@ -171,7 +181,7 @@ export function OrderBook({
 
       {/* Spread */}
       {spread !== null && (
-        <div className="px-4 py-3 border-t border-white/5 bg-white/[0.02]">
+        <div className="px-4 py-3 border-t border-white/5 bg-white/[0.02] flex-shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <ArrowUpDown className="w-4 h-4" />
@@ -237,7 +247,7 @@ function OrderBookRow({
             : 'text-destructive group-hover:text-destructive'
         }`}
       >
-        {(price * 100).toFixed(1)}¢
+        {(price * 100).toFixed(2)}¢
       </span>
       <span className="relative text-right font-mono text-muted-foreground group-hover:text-foreground transition-colors">
         {size >= 1000 ? `${(size / 1000).toFixed(1)}K` : size.toFixed(0)}

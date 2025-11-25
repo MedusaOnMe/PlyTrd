@@ -90,7 +90,7 @@ export default function MarketDetailPage() {
   const currentYesPrice = getMarketYesPrice(market);
 
   return (
-    <div className="container mx-auto px-4 py-4 max-w-7xl animate-fadeIn">
+    <div className="mx-auto px-4 lg:px-6 py-4 max-w-[1800px] animate-fadeIn">
       {/* Compact Header */}
       <div className="flex items-start justify-between gap-4 mb-4">
         <div className="flex items-start gap-3 min-w-0 flex-1">
@@ -180,17 +180,28 @@ export default function MarketDetailPage() {
         </div>
       )}
 
-      {/* Main Grid - Chart + Trading */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
-        {/* Chart - Takes 2 cols */}
-        <div className="lg:col-span-2">
+      {/* Main Grid - Chart + Trading + Order Book */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mb-4 items-stretch">
+        {/* Chart - Takes 6 cols */}
+        <div className="lg:col-span-6 min-h-[500px]">
           {selectedToken?.token_id && (
-            <PriceChart tokenId={selectedToken.token_id} outcome={selectedToken.outcome} />
+            <PriceChart tokenId={selectedToken.token_id} outcome={selectedToken.outcome} className="h-full" />
           )}
         </div>
 
-        {/* Trading Panel + Outcome Selector */}
-        <div className="space-y-4">
+        {/* Order Book - Takes 3 cols */}
+        <div className="lg:col-span-3">
+          <OrderBook
+            orderBook={selectedTokenData?.orderBook}
+            assetId={selectedToken?.token_id}
+            enableRealtime={true}
+            onSelectPrice={(price, side) => console.log('Selected price:', price, side)}
+            className="h-full"
+          />
+        </div>
+
+        {/* Trading Panel + Outcome Selector - Takes 3 cols */}
+        <div className="lg:col-span-3 flex flex-col gap-4">
           {/* Compact Outcome Selector */}
           {market && tokens.length > 0 && (
             <div className="grid grid-cols-2 gap-2">
@@ -228,28 +239,22 @@ export default function MarketDetailPage() {
           )}
 
           {/* Trading Panel */}
-          <TradingPanel
-            market={market}
-            selectedToken={selectedToken}
-            spread={selectedTokenData?.spread}
-          />
+          <div className="flex-1">
+            <TradingPanel
+              market={market}
+              selectedToken={selectedToken}
+              spread={selectedTokenData?.spread}
+            />
+          </div>
         </div>
       </div>
 
-      {/* Bottom Row - AI + Order Book side by side */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <AIAnalysis
-          question={market?.question || event.title}
-          description={event.description}
-          currentPrice={currentYesPrice ?? undefined}
-        />
-        <OrderBook
-          orderBook={selectedTokenData?.orderBook}
-          assetId={selectedToken?.token_id}
-          enableRealtime={true}
-          onSelectPrice={(price, side) => console.log('Selected price:', price, side)}
-        />
-      </div>
+      {/* AI Analysis - Full Width */}
+      <AIAnalysis
+        question={market?.question || event.title}
+        description={event.description}
+        currentPrice={currentYesPrice ?? undefined}
+      />
     </div>
   );
 }

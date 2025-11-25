@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { GammaMarket } from '@/lib/polymarket/types';
 import { useCreateOrder } from '@/hooks/useOrders';
 import { useAuthStore } from '@/lib/store';
@@ -39,6 +39,18 @@ export function TradingPanel({
   const [orderType, setOrderType] = useState<'GTC' | 'FOK'>('GTC');
   const [price, setPrice] = useState('');
   const [shares, setShares] = useState('');
+
+  // Get market price from spread (ask for BUY, bid for SELL), fallback to token price
+  const marketPrice = side === 'BUY'
+    ? (spread?.ask ? parseFloat(spread.ask) : (selectedToken?.price ?? null))
+    : (spread?.bid ? parseFloat(spread.bid) : (selectedToken?.price ?? null));
+
+  // Auto-set price when using market orders (FOK)
+  useEffect(() => {
+    if (orderType === 'FOK' && marketPrice) {
+      setPrice(marketPrice.toFixed(2));
+    }
+  }, [orderType, side, marketPrice]);
 
   const priceNum = parseFloat(price) || 0;
   const sharesNum = parseFloat(shares) || 0;
@@ -123,7 +135,7 @@ export function TradingPanel({
   const isYes = selectedToken.outcome === 'Yes';
 
   return (
-    <div className="glass rounded-xl overflow-hidden">
+    <div className="glass rounded-xl overflow-hidden h-full flex flex-col">
       {/* Header */}
       <div className="p-4 border-b border-white/5">
         <div className="flex items-center justify-between">
@@ -173,43 +185,59 @@ export function TradingPanel({
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="p-4 space-y-4">
+      <form onSubmit={handleSubmit} className="p-4 space-y-4 flex-1 flex flex-col">
         {/* Price Input */}
         <div>
           <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
-            Price (probability)
+            {orderType === 'FOK' ? 'Market Price' : 'Price (probability)'}
           </label>
           <div className="relative">
             <input
               type="number"
               value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              placeholder="0.50"
+              onChange={(e) => orderType === 'GTC' && setPrice(e.target.value)}
+              placeholder={marketPrice ? marketPrice.toFixed(2) : '0.50'}
               step="0.01"
               min="0.01"
               max="0.99"
-              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent pr-10 font-mono transition-all"
+              disabled={orderType === 'FOK'}
+              className={`w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent pr-10 font-mono transition-all ${
+                orderType === 'FOK' ? 'opacity-60 cursor-not-allowed' : ''
+              }`}
             />
             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground font-mono">
               ¢
             </span>
           </div>
-          <div className="flex gap-2 mt-2">
-            {[10, 25, 50, 75, 90].map((pct) => (
-              <button
-                key={pct}
-                type="button"
-                onClick={() => setQuickPrice(pct)}
-                className={`flex-1 py-1.5 text-xs font-medium rounded-lg transition-all ${
-                  price === (pct / 100).toFixed(2)
-                    ? 'bg-primary text-white'
-                    : 'bg-white/5 hover:bg-white/10 text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {pct}¢
-              </button>
-            ))}
-          </div>
+          {orderType === 'GTC' ? (
+            <div className="space-y-2 mt-2">
+              {marketPrice && (
+                <p className="text-xs text-muted-foreground">
+                  Best {side === 'BUY' ? 'ask' : 'bid'}: <span className="text-foreground font-mono">{(marketPrice * 100).toFixed(0)}¢</span>
+                </p>
+              )}
+              <div className="flex gap-2">
+                {[10, 25, 50, 75, 90].map((pct) => (
+                  <button
+                    key={pct}
+                    type="button"
+                    onClick={() => setQuickPrice(pct)}
+                    className={`flex-1 py-1.5 text-xs font-medium rounded-lg transition-all ${
+                      price === (pct / 100).toFixed(2)
+                        ? 'bg-primary text-white'
+                        : 'bg-white/5 hover:bg-white/10 text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    {pct}¢
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <p className="text-xs text-muted-foreground mt-2">
+              Auto-filled from {side === 'BUY' ? 'best ask' : 'best bid'}: <span className="text-foreground font-mono">{marketPrice ? (marketPrice * 100).toFixed(0) : '--'}¢</span>
+            </p>
+          )}
         </div>
 
         {/* Shares Input */}
@@ -295,6 +323,9 @@ export function TradingPanel({
             <span>Insufficient balance</span>
           </div>
         )}
+
+        {/* Spacer to push button to bottom */}
+        <div className="flex-1" />
 
         {/* Submit Button */}
         <button

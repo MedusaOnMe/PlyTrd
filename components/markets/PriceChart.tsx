@@ -15,6 +15,7 @@ import { useState } from 'react';
 interface PriceChartProps {
   tokenId: string;
   outcome?: string;
+  className?: string;
 }
 
 type Interval = '1h' | '6h' | '1d' | '1w' | 'max';
@@ -32,7 +33,7 @@ interface PricePoint {
   p: number;
 }
 
-export function PriceChart({ tokenId, outcome }: PriceChartProps) {
+export function PriceChart({ tokenId, outcome, className }: PriceChartProps) {
   const [interval, setInterval] = useState<Interval>('1w');
 
   const { data, isLoading, error } = useQuery({
@@ -89,9 +90,9 @@ export function PriceChart({ tokenId, outcome }: PriceChartProps) {
   };
 
   return (
-    <div className="glass rounded-xl overflow-hidden">
+    <div className={`glass rounded-xl overflow-hidden flex flex-col ${className || ''}`}>
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-white/5">
+      <div className="flex items-center justify-between p-4 border-b border-white/5 flex-shrink-0">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/30 to-transparent flex items-center justify-center">
             <LineChart className="w-5 h-5 text-primary" />
@@ -124,7 +125,7 @@ export function PriceChart({ tokenId, outcome }: PriceChartProps) {
 
       {/* Price Stats */}
       {!isLoading && !error && chartData.length > 0 && (
-        <div className="flex items-center justify-between px-4 py-3 bg-white/[0.02]">
+        <div className="flex items-center justify-between px-4 py-3 bg-white/[0.02] flex-shrink-0">
           <div>
             <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
               Current Price
@@ -165,7 +166,7 @@ export function PriceChart({ tokenId, outcome }: PriceChartProps) {
 
       {/* Loading State */}
       {isLoading && (
-        <div className="flex flex-col items-center justify-center h-64 gap-3">
+        <div className="flex flex-col items-center justify-center flex-1 min-h-[200px] gap-3">
           <div className="relative">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
             <div className="absolute inset-0 blur-lg bg-primary/30 animate-pulse" />
@@ -176,7 +177,7 @@ export function PriceChart({ tokenId, outcome }: PriceChartProps) {
 
       {/* Error State */}
       {error && (
-        <div className="flex flex-col items-center justify-center h-64 gap-3">
+        <div className="flex flex-col items-center justify-center flex-1 min-h-[200px] gap-3">
           <div className="w-16 h-16 rounded-2xl bg-destructive/10 flex items-center justify-center">
             <LineChart className="w-8 h-8 text-destructive" />
           </div>
@@ -186,7 +187,7 @@ export function PriceChart({ tokenId, outcome }: PriceChartProps) {
 
       {/* Empty State */}
       {!isLoading && !error && chartData.length === 0 && (
-        <div className="flex flex-col items-center justify-center h-64 gap-3">
+        <div className="flex flex-col items-center justify-center flex-1 min-h-[200px] gap-3">
           <div className="w-16 h-16 rounded-2xl bg-muted/50 flex items-center justify-center">
             <LineChart className="w-8 h-8 text-muted-foreground" />
           </div>
@@ -199,7 +200,7 @@ export function PriceChart({ tokenId, outcome }: PriceChartProps) {
 
       {/* Chart */}
       {!isLoading && !error && chartData.length > 0 && (
-        <div className="h-64 p-4 pt-0">
+        <div className="flex-1 min-h-0 p-4 pt-0">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={chartData}>
               <defs>
