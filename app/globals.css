@@ -272,3 +272,223 @@ input:focus, button:focus, select:focus, textarea:focus {
   pointer-events: none;
   z-index: 100;
 }
+
+/* Ticker animation */
+@keyframes ticker {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-ticker {
+  animation: ticker 60s linear infinite;
+}
+
+.animate-ticker:hover {
+  animation-play-state: paused;
+}
+
+/* Terminal monospace styling */
+.terminal-font {
+  font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Monaco, 'Cascadia Code', monospace;
+}
+
+/* Scanline effect for terminal feel */
+.scanlines::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.03) 2px,
+    rgba(0, 0, 0, 0.03) 4px
+  );
+  pointer-events: none;
+}
+
+/* Panel styles */
+.panel {
+  @apply glass rounded-lg overflow-hidden;
+}
+
+.panel-header {
+  @apply px-3 py-2 border-b border-white/5 bg-white/[0.02] flex items-center justify-between;
+}
+
+.panel-title {
+  @apply text-xs font-medium uppercase tracking-wider text-muted-foreground;
+}
+
+/* Drag handle */
+.drag-handle {
+  @apply cursor-move hover:bg-white/5 rounded p-1 transition-colors;
+}
+
+.drag-handle:active {
+  @apply bg-white/10;
+}
+
+/* Data table styles */
+.data-row {
+  @apply flex items-center justify-between py-1.5 px-2 hover:bg-white/5 transition-colors text-sm;
+}
+
+.data-row:not(:last-child) {
+  @apply border-b border-white/5;
+}
+
+/* Status indicator */
+.status-dot {
+  @apply w-2 h-2 rounded-full;
+}
+
+.status-dot.connected {
+  @apply bg-success;
+  box-shadow: 0 0 6px hsl(var(--success));
+}
+
+.status-dot.disconnected {
+  @apply bg-destructive;
+}
+
+.status-dot.connecting {
+  @apply animate-pulse;
+  background-color: hsl(var(--warning));
+}
+
+/* Keyboard shortcut badge */
+.kbd {
+  @apply inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-mono font-medium;
+  @apply bg-white/10 border border-white/20 rounded;
+  min-width: 20px;
+}
+
+/* Blink animation for live data */
+@keyframes blink {
+  0%, 50%, 100% { opacity: 1; }
+  25%, 75% { opacity: 0.5; }
+}
+
+.live-indicator {
+  animation: blink 2s ease-in-out infinite;
+}
+
+/* React Grid Layout overrides */
+.react-grid-layout {
+  position: relative;
+}
+
+.react-grid-item {
+  transition: all 200ms ease;
+  transition-property: left, top, width, height;
+}
+
+.react-grid-item.cssTransforms {
+  transition-property: transform, width, height;
+}
+
+.react-grid-item.resizing {
+  z-index: 10;
+  will-change: width, height;
+}
+
+.react-grid-item.react-draggable-dragging {
+  transition: none;
+  z-index: 100;
+  will-change: transform;
+}
+
+.react-grid-item.dropping {
+  visibility: hidden;
+}
+
+.react-grid-item.react-grid-placeholder {
+  @apply bg-primary/20 rounded-lg border-2 border-dashed border-primary/50;
+  transition-duration: 100ms;
+  z-index: 2;
+  user-select: none;
+}
+
+/* Resize handle styling */
+.react-resizable-handle {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+}
+
+.react-resizable-handle::after {
+  content: '';
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid rgba(255, 255, 255, 0.2);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.react-resizable-handle:hover::after {
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.react-resizable-handle-sw {
+  bottom: 0;
+  left: 0;
+  cursor: sw-resize;
+  transform: rotate(90deg);
+}
+
+.react-resizable-handle-se {
+  bottom: 0;
+  right: 0;
+  cursor: se-resize;
+}
+
+.react-resizable-handle-nw {
+  top: 0;
+  left: 0;
+  cursor: nw-resize;
+  transform: rotate(180deg);
+}
+
+.react-resizable-handle-ne {
+  top: 0;
+  right: 0;
+  cursor: ne-resize;
+  transform: rotate(270deg);
+}
+
+.react-resizable-handle-w,
+.react-resizable-handle-e {
+  top: 50%;
+  margin-top: -10px;
+  cursor: ew-resize;
+}
+
+.react-resizable-handle-w {
+  left: 0;
+  transform: rotate(135deg);
+}
+
+.react-resizable-handle-e {
+  right: 0;
+  transform: rotate(315deg);
+}
+
+.react-resizable-handle-n,
+.react-resizable-handle-s {
+  left: 50%;
+  margin-left: -10px;
+  cursor: ns-resize;
+}
+
+.react-resizable-handle-n {
+  top: 0;
+  transform: rotate(225deg);
+}
+
+.react-resizable-handle-s {
+  bottom: 0;
+  transform: rotate(45deg);
+}

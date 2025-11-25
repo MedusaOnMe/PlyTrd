@@ -1,8 +1,7 @@
 'use client';
 
-import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { Sparkles, RefreshCw, AlertCircle, ChevronDown, ChevronUp, Brain, Zap } from 'lucide-react';
+import { Sparkles, RefreshCw, AlertCircle, Brain, Zap } from 'lucide-react';
 
 interface AIAnalysisProps {
   question: string;
@@ -11,8 +10,6 @@ interface AIAnalysisProps {
 }
 
 export function AIAnalysis({ question, description, currentPrice }: AIAnalysisProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
-
   const { mutate, data, isPending, error, reset } = useMutation({
     mutationFn: async () => {
       const response = await fetch('/api/ai/analyze', {
@@ -31,77 +28,55 @@ export function AIAnalysis({ question, description, currentPrice }: AIAnalysisPr
   const handleAnalyze = () => {
     reset();
     mutate();
-    if (!isExpanded) setIsExpanded(true);
   };
 
   return (
-    <div className="glass rounded-xl overflow-hidden">
+    <div className="h-full flex flex-col">
       {/* Header */}
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors"
-      >
+      <div className="flex items-center justify-between p-3 border-b border-white/5">
         <div className="flex items-center gap-3">
           <div className="relative">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center">
-              <Brain className="w-5 h-5 text-primary" />
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center">
+              <Brain className="w-4 h-4 text-primary" />
             </div>
-            <div className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full animate-pulse" />
+            <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-primary rounded-full animate-pulse" />
           </div>
           <div className="text-left">
-            <h3 className="font-semibold flex items-center gap-2">
+            <h3 className="text-sm font-semibold flex items-center gap-2">
               AI Analysis
-              <span className="text-xs px-2 py-0.5 rounded-full bg-gradient-to-r from-primary/20 to-[hsl(200,95%,50%)]/20 text-primary font-medium">
-                Live Search
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-gradient-to-r from-primary/20 to-[hsl(200,95%,50%)]/20 text-primary font-medium">
+                Live
               </span>
             </h3>
-            <p className="text-xs text-muted-foreground">
-              Real-time web search powered insights
-            </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          {!data && !isPending && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleAnalyze();
-              }}
-              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary to-[hsl(200,95%,50%)] text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity"
-            >
-              <Sparkles className="w-4 h-4" />
-              Analyze
-            </button>
-          )}
-          {isExpanded ? (
-            <ChevronUp className="w-5 h-5 text-muted-foreground" />
-          ) : (
-            <ChevronDown className="w-5 h-5 text-muted-foreground" />
-          )}
-        </div>
-      </button>
+        {!data && !isPending && (
+          <button
+            onClick={handleAnalyze}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-primary to-[hsl(200,95%,50%)] text-white text-xs font-medium rounded-lg hover:opacity-90 transition-opacity"
+          >
+            <Sparkles className="w-3 h-3" />
+            Analyze
+          </button>
+        )}
+      </div>
 
-      {/* Content */}
-      {isExpanded && (
-        <div className="border-t border-white/5">
+      {/* Content - always visible */}
+      <div className="flex-1 overflow-hidden">
           {/* Loading State */}
           {isPending && (
-            <div className="p-6">
-              <div className="flex items-center justify-center gap-3 py-8">
-                <div className="relative">
-                  <Zap className="w-8 h-8 text-primary animate-pulse" />
-                  <div className="absolute inset-0 blur-lg bg-primary/30 animate-pulse" />
-                </div>
-                <div className="text-left">
-                  <p className="font-medium">Searching the web...</p>
-                  <p className="text-sm text-muted-foreground">
-                    Finding latest news and data for analysis
-                  </p>
-                </div>
+            <div className="flex flex-col items-center justify-center h-full p-4">
+              <div className="relative mb-3">
+                <Zap className="w-6 h-6 text-primary animate-pulse" />
+                <div className="absolute inset-0 blur-lg bg-primary/30 animate-pulse" />
               </div>
-              <div className="space-y-3">
-                {[...Array(4)].map((_, i) => (
-                  <div key={i} className="h-4 bg-muted rounded shimmer" style={{ width: `${80 - i * 15}%` }} />
+              <p className="text-sm font-medium">Searching the web...</p>
+              <p className="text-xs text-muted-foreground">
+                Finding latest news and data
+              </p>
+              <div className="space-y-2 mt-4 w-full max-w-xs">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="h-3 bg-muted rounded shimmer" style={{ width: `${90 - i * 20}%` }} />
                 ))}
               </div>
             </div>
@@ -109,16 +84,16 @@ export function AIAnalysis({ question, description, currentPrice }: AIAnalysisPr
 
           {/* Error State */}
           {error && (
-            <div className="p-6">
-              <div className="flex items-center gap-3 text-destructive mb-4">
+            <div className="flex flex-col items-center justify-center h-full p-4">
+              <div className="flex items-center gap-2 text-destructive mb-3">
                 <AlertCircle className="w-5 h-5" />
-                <span>Failed to generate analysis</span>
+                <span className="text-sm">Failed to generate analysis</span>
               </div>
               <button
                 onClick={handleAnalyze}
-                className="flex items-center gap-2 px-4 py-2 bg-destructive/10 text-destructive rounded-lg hover:bg-destructive/20 transition-colors"
+                className="flex items-center gap-2 px-3 py-1.5 text-xs bg-destructive/10 text-destructive rounded-lg hover:bg-destructive/20 transition-colors"
               >
-                <RefreshCw className="w-4 h-4" />
+                <RefreshCw className="w-3 h-3" />
                 Try Again
               </button>
             </div>
@@ -126,22 +101,22 @@ export function AIAnalysis({ question, description, currentPrice }: AIAnalysisPr
 
           {/* Analysis Content */}
           {data && (
-            <div className="p-6">
-              <div className="prose prose-sm prose-invert max-w-none">
+            <div className="h-full flex flex-col p-3">
+              <div className="flex-1 overflow-auto prose prose-sm prose-invert max-w-none">
                 <div
-                  className="text-sm leading-relaxed space-y-4"
+                  className="text-xs leading-relaxed"
                   dangerouslySetInnerHTML={{ __html: formatAnalysis(data) }}
                 />
               </div>
-              <div className="mt-6 pt-4 border-t border-white/5 flex items-center justify-between">
-                <p className="text-xs text-muted-foreground">
-                  Live web search analysis. Not financial advice.
+              <div className="pt-2 border-t border-white/5 flex items-center justify-between mt-2">
+                <p className="text-[10px] text-muted-foreground">
+                  Not financial advice
                 </p>
                 <button
                   onClick={handleAnalyze}
-                  className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                  className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  <RefreshCw className="w-3.5 h-3.5" />
+                  <RefreshCw className="w-3 h-3" />
                   Regenerate
                 </button>
               </div>
@@ -150,26 +125,17 @@ export function AIAnalysis({ question, description, currentPrice }: AIAnalysisPr
 
           {/* Empty State */}
           {!isPending && !error && !data && (
-            <div className="p-6 text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-transparent mb-4">
-                <Sparkles className="w-8 h-8 text-primary" />
+            <div className="flex flex-col items-center justify-center h-full p-4 text-center">
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-transparent mb-3">
+                <Sparkles className="w-6 h-6 text-primary" />
               </div>
-              <h4 className="font-medium mb-2">Get Live AI Insights</h4>
-              <p className="text-sm text-muted-foreground mb-4 max-w-sm mx-auto">
-                Our AI searches the web in real-time for the latest news and data
-                to provide you with up-to-date market analysis.
+              <h4 className="font-medium text-sm mb-1">Get Live AI Insights</h4>
+              <p className="text-xs text-muted-foreground mb-3 max-w-xs">
+                Click Analyze for real-time web search powered insights
               </p>
-              <button
-                onClick={handleAnalyze}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary to-[hsl(200,95%,50%)] text-white font-medium rounded-xl hover:opacity-90 transition-opacity glow"
-              >
-                <Sparkles className="w-5 h-5" />
-                Generate Analysis
-              </button>
             </div>
           )}
-        </div>
-      )}
+      </div>
     </div>
   );
 }

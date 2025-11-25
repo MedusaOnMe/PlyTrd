@@ -133,11 +133,29 @@ export function useMultiplePriceWebSocket(assetIds: string[]) {
   const wsClient = useRef(getWebSocketClient());
 
   const handleMessage = useCallback((message: WebSocketMessage) => {
+    // Handle direct price_change events
     if (message.event_type === 'price_change' && message.asset_id && message.price) {
       setPrices((prev) => ({
         ...prev,
         [message.asset_id!]: message.price!,
       }));
+    }
+    // Also extract price from book events (best bid as price)
+    if (message.event_type === 'book' && message.asset_id) {
+      const bookMsg = message as unknown as BookMessage;
+      if (bookMsg.bids && bookMsg.bids.length > 0) {
+        // Sort bids descending and get best bid
+        const sortedBids = [...bookMsg.bids].sort(
+          (a, b) => parseFloat(b.price) - parseFloat(a.price)
+        );
+        const bestBid = sortedBids[0]?.price;
+        if (bestBid) {
+          setPrices((prev) => ({
+            ...prev,
+            [message.asset_id!]: bestBid,
+          }));
+        }
+      }
     }
   }, []);
 

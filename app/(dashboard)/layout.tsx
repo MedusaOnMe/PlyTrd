@@ -4,6 +4,9 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/store';
 import { Header } from '@/components/layout/Header';
+import { Ticker } from '@/components/terminal/Ticker';
+import { StatusBar } from '@/components/terminal/StatusBar';
+import { useGlobalHotkeys } from '@/hooks/useHotkeys';
 import { Loader2 } from 'lucide-react';
 
 export default function DashboardLayout({
@@ -13,6 +16,9 @@ export default function DashboardLayout({
 }) {
   const router = useRouter();
   const { user, loading } = useAuthStore();
+
+  // Initialize global hotkeys
+  useGlobalHotkeys();
 
   useEffect(() => {
     if (!loading && !user) {
@@ -36,9 +42,20 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* Fixed Header */}
       <Header />
-      <main className="pt-16">{children}</main>
+
+      {/* Ticker Bar - below header */}
+      <div className="fixed top-16 left-0 right-0 z-40">
+        <Ticker />
+      </div>
+
+      {/* Main content - with padding for header, ticker, and status bar */}
+      <main className="flex-1 pt-24 pb-8">{children}</main>
+
+      {/* Fixed Status Bar */}
+      <StatusBar />
     </div>
   );
 }
